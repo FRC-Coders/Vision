@@ -12,12 +12,11 @@ while True:
     #bluring
     blur = cv2.blur(hsv,(5,5))
     #define color range
-    lower_green = np.array([40,90,90])
-    upper_green = np.array([70,255,255])
+    lower_green = np.array([0,0,100])
+    upper_green = np.array([255,150,255])
     
     #create mask
     mask = cv2.inRange(blur, lower_green,upper_green)
-    flip_mask = cv2.bitwise_not(mask)#flip mask colors
     #create res
     res = cv2.bitwise_and(frame,frame,mask=mask)
     #create threshold
