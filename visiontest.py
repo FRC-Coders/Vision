@@ -22,15 +22,15 @@ while True:
     #create threshold
     ret,thresh = cv2.threshold(mask,127,255,cv2.THRESH_BINARY)
     
-    #find an draw contours
+    #find contours
     contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(res, contours, -1, (45,255,30), 3)
-    #finding max contour
     for c in contours:
         # get the bounding rect
         x, y, w, h = cv2.boundingRect(c)
         # draw a green rectangle to visualize the bounding rect
         cv2.rectangle(res, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    #draw a center plus
     if len(contours) == 2:
         x1,y1,w1,h1= cv2.boundingRect(contours[0])
         x2,y2,w2,h2= cv2.boundingRect(contours[1])
@@ -40,7 +40,6 @@ while True:
         cv2.line(res,(pt1, pt2+7),(pt1,pt2-7),(0,0,255),2)
     #display
     cv2.imshow("source",frame)
-    #cv2.imshow("blob",im_with_keypoints)
     cv2.imshow("mask",mask)
     cv2.imshow("cont",res)
 
