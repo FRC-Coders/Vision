@@ -21,18 +21,17 @@ while True:
     #create res
     res = cv2.bitwise_and(frame,frame,mask=mask)
     #create threshold
-    ret,thresh = cv2.threshold(flip_mask,127,255,0)
+    ret,thresh = cv2.threshold(mask,127,255,cv2.THRESH_BINARY)
     
     #find an draw contours
     contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(res, contours, -1, (0,255,0), 3)
+    cv2.drawContours(res, contours, -1, (45,255,30), 3)
     #finding max contour
-    areas = [cv2.contourArea(c) for c in contours]
-    max_index = np.argmax(areas)
-    cnt=contours[max_index]
-    #drawing rectangle
-    x,y,w,h = cv2.boundingRect(cnt)
-    cv2.rectangle(res,(x,y),(x+w,y+h),(0,255,0),2)
+    for c in contours:
+        # get the bounding rect
+        x, y, w, h = cv2.boundingRect(c)
+        # draw a green rectangle to visualize the bounding rect
+        cv2.rectangle(res, (x, y), (x+w, y+h), (0, 255, 0), 2)
     #uncomment for blobs
     #detector = cv2.SimpleBlobDetector()
     #keypoints = detector.detect(flip_mask)
@@ -41,7 +40,7 @@ while True:
     #display
     cv2.imshow("source",frame)
     #cv2.imshow("blob",im_with_keypoints)
-    cv2.imshow("mask",flip_mask)
+    cv2.imshow("mask",mask)
     cv2.imshow("cont",res)
 
     if cv2.waitKey(5) & 0xFF == 27:
