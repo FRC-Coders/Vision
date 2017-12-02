@@ -3,7 +3,7 @@ import numpy as np
 DRAW_COLOR = (45,255,30)
 #hsv range
 MIN_GREEN = np.array([44,0,252])
-Max_Green = np.array([91,47,255])
+Max_GREEN = np.array([91,47,255])
 
 #kernels
 BLUR_KERNEL = np.ones((3,3))
