@@ -1,8 +1,9 @@
+import sys
 import cv2
 import numpy as np
 import Tkinter as tk
 import TheJokerLib_Vision as jk
-from lib import JokerConfig as conf
+import JokerConfig as conf
 cap = cv2.VideoCapture(0)
 
 while 4320:
@@ -14,7 +15,7 @@ while 4320:
     #bluring
     blur = cv2.blur(hsv,conf.BLUR_KERNEL)
     #create mask
-    mask = cv2.inRange(blur, conf.MIN_GREEN,MAX_GREEN)
+    mask = cv2.inRange(blur,conf.MIN_GREEN,conf.MAX_GREEN)
 
     mask = jk.dil_ero(mask,(300,300),3)
     #create res
