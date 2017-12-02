@@ -43,10 +43,10 @@ while 4320:
     if len(cnts) > 1 :
         x1,y1,w1,h1= cv2.boundingRect(cnts[0])
         x2,y2,w2,h2= cv2.boundingRect(cnts[1])
-     #   pt1 = ((x1+w1/2+x2+w2/2)/2)
-      #  pt2 = ((y1+h1/2+y2+h2/2)/2)
-       # cv2.line(res,(pt1 + 7,pt2),(pt1 - 7, pt2),(0,0,255),2)
-        #cv2.line(res,(pt1, pt2+7),(pt1,pt2-7),(0,0,255),2)
+        pt1 = ((x1+w1/2+x2+w2/2)/2)
+        pt2 = ((y1+h1/2+y2+h2/2)/2)
+        cv2.line(res,(pt1 + 7,pt2),(pt1 - 7, pt2),(0,0,255),2)
+        cv2.line(res,(pt1, pt2+7),(pt1,pt2-7),(0,0,255),2)
         cv2.putText(res,str((((2.0*714)/((w1+w2)/2.0))*conf.INCH2CM)),(x1,y1-20),1,5,(255,255,255))
     #display
     cv2.imshow("source",frame)
