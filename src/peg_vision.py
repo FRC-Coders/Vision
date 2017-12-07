@@ -2,10 +2,11 @@ import sys
 import cv2
 import numpy as np
 import Tkinter as tk
-import TheJokerLib_Vision as jk
+#import TheJokerLib_Vision as jk
 import JokerConfig as conf
 cap = cv2.VideoCapture(0)
-
+FRAME_WIDTH = cap.get(3)
+FRAME_HEIGHT = cap.get(4)
 while 4320:
     #reading camera
     _,frame = cap.read()
@@ -13,11 +14,15 @@ while 4320:
     #hsv convert
     hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
     #bluring
-    blur = cv2.blur(hsv,conf.BLUR_KERNEL)
-    #create mask
-    mask = cv2.inRange(blur,conf.MIN_GREEN,conf.MAX_GREEN)
+    blur_kernel = (5,5)
+    blur = cv2.GaussianBlur(hsv, blur_kernel,0)
+    mask = blur
+    mask_kernel = (10,10)
+    mask = cv2.erode(mask,mask_kernel,iterations = 5)
+    mask = cv2.dilate(mask,mask_kernel,iterations = 5)
 
-    mask = jk.dil_ero(mask,(300,300),3)
+    #create mask
+    mask = cv2.inRange(mask,np.array([55,0,250]),np.array([60,5,255]))
     #create res
     res = cv2.bitwise_and(frame,frame,mask=mask)
 
@@ -33,25 +38,60 @@ while 4320:
         # draw a green rectangle to visualize the bounding rect
         
     cnts = []
+    #filter ration
     for c in contours:
         x,y,w,h = cv2.boundingRect(c)
         if (conf.MIN_RECT_RATIO<=float(h)/w<=conf.MAX_RECT_RATIO) and h*w>1000:
             cv2.rectangle(res, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cnts.append(c)
-    cv2.drawContours(res, cnts, -1, conf.DRAW_COLOR, 3)
-    #draw a center plus
-    if len(cnts) > 1 :
-        x1,y1,w1,h1= cv2.boundingRect(cnts[0])
-        x2,y2,w2,h2= cv2.boundingRect(cnts[1])
-        pt1 = ((x1+w1/2+x2+w2/2)/2)
-        pt2 = ((y1+h1/2+y2+h2/2)/2)
-        cv2.line(res,(pt1 + 7,pt2),(pt1 - 7, pt2),(0,0,255),2)
-        cv2.line(res,(pt1, pt2+7),(pt1,pt2-7),(0,0,255),2)
+    #filter polygon
+    epsil = 0.02
+    goals = []
+    for c in cnts:
+        hull = cv2.convexHull(c)
+        epsilon = epsil * cv2.arcLength(hull, True)
+        goals.append(cv2.approxPolyDP(hull, epsilon, True))
+    #calc centers by moments
+    centers_x = [0]
+    centers_y = [0]
+    for g in goals:
+        M = cv2.moments(g)
+        if M['m00'] > 0:
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
+            center = (cx,cy)
+            cv2.circle(res, center, 5, (255, 0, 0), -1)
+            centers_x.append(cx)
+            centers_y.append(cy)
+    #initialize angle
+    angle = 0
+    #drwing contours for goals centers
+    cv2.drawContours(res, goals, -1, conf.DRAW_COLOR, 3)
+    #intialize targets
+    target_x = 0
+    target_y = 0
+    #calc centers of targets
+    if len(centers_x) == 3 and len(centers_y) == 3:
+        target_x = float(centers_x[1] + centers_x[2])/2
+        target_y = float(centers_y[1] + centers_y[2])/2
+        cv2.circle(res, (int(target_x),int(target_y)), 5, (0, 255, 0), -1)
+    frame_cx,frame_cy = int(float(FRAME_WIDTH)/2),int(float(FRAME_HEIGHT)/2)
+    cv2.circle(res, (frame_cx,frame_cy), 5, (255, 0, 0), -1)
+    #calc error
+    error = target_x - frame_cx
+    angle = error * (float(conf.FOV_ANGLE) / FRAME_WIDTH)
+    cv2.putText(res,str(angle),(20,100),1,5,(255,255,255))
+    #draw bounding rects and distance calc
+    if len(goals) > 1 :
+        x1,y1,w1,h1= cv2.boundingRect(goals[0])
+        x2,y2,w2,h2= cv2.boundingRect(goals[1])
         cv2.putText(res,str((((2.0*714)/((w1+w2)/2.0))*conf.INCH2CM)),(x1,y1-20),1,5,(255,255,255))
     #display
+        
     cv2.imshow("source",frame)
     cv2.imshow("mask",mask)
     cv2.imshow("cont",res)
+    
 
     if cv2.waitKey(5) & 0xFF == 27:
         break
