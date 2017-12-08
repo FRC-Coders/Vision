@@ -39,7 +39,6 @@ def update():
 cap = cv2.VideoCapture(1)
 FRAME_WIDTH = cap.get(3)
 FRAME_HEIGHT = cap.get(4)
-vals = tk.Tk()
 
 while 4320:
     #reading camera
@@ -126,8 +125,6 @@ while 4320:
     #cv2.imshow("mask",mask)
     cv2.imshow("cont",res)
     cv2.imshow(window,img)
-    tk.Label(vals,text="angle: %s" % str(angle),fg = "black").pack
-    tk.mainloop()
     if cv2.waitKey(5) & 0xFF == 27:
         break
 cap.release()
