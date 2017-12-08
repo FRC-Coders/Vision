@@ -34,7 +34,7 @@ def update():
 	low = np.array([lowH,lowS,lowV])
 	high = np.array([hiH,hiS,hiV])
 	return (low,high)
-	
+#----------------------------------------------------------------------------------	
 #capture configurations
 cap = cv2.VideoCapture(1)
 FRAME_WIDTH = cap.get(3)
@@ -43,19 +43,18 @@ FRAME_HEIGHT = cap.get(4)
 while 4320:
     #reading camera
     _,frame = cap.read()
+	#init black screen
+    img = np.zeros((300,512,3), np.uint8)
     #hsv convert
     hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
     #bluring
-    blur_kernel = (5,5)
-    blur = cv2.GaussianBlur(hsv, blur_kernel,0)
-    mask = blur
-    mask_kernel = (10,10)
-    mask = cv2.erode(mask,mask_kernel,iterations = 5)
-    mask = cv2.dilate(mask,mask_kernel,iterations = 5)
-
+    kernel = (19,19)
+    blur = cv2.GaussianBlur(hsv, kernel,0)
+    opening = cv2.morphologyEx(blur, cv2.MORPH_OPEN, kernel)
+    closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
     #create mask
     low,high = update()
-    mask = cv2.inRange(mask,low,high)
+    mask = cv2.inRange(opening,low,high)
     #create res
     res = cv2.bitwise_and(frame,frame,mask=mask)
 
@@ -113,12 +112,12 @@ while 4320:
     #calc error
     error = target_x - frame_cx
     angle = error * (float(conf.FOV_ANGLE) / FRAME_WIDTH)
-    cv2.putText(img,str(angle),(40,140),4,3,(255,255,255))
+    cv2.putText(img,str(angle),(40,240),4,1,(255,255,255))
     #draw bounding rects and distance calc
     if len(goals) > 1 :
         x1,y1,w1,h1= cv2.boundingRect(goals[0])
         x2,y2,w2,h2= cv2.boundingRect(goals[1])
-        cv2.putText(img,str((((2.0*714)/((w1+w2)/2.0))*conf.INCH2CM)),(40,40),4,3,(255,255,255))
+        cv2.putText(img,str((((2.0*714)/((w1+w2)/2.0))*conf.INCH2CM)),(40,140),4,1,(255,255,255))
     #display
         
     cv2.imshow("source",frame)
