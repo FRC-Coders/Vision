@@ -4,13 +4,46 @@ import numpy as np
 import Tkinter as tk
 #import TheJokerLib_Vision as jk
 import JokerConfig as conf
-cap = cv2.VideoCapture(0)
+#GUI configurations
+def nothing(x):
+	pass
+	
+lowH = 0
+lowS = 0
+lowV = 0
+hiH = 0
+hiS = 0
+hiV = 0
+window = "trackbar"
+img = np.zeros((300,512,3), np.uint8)
+cv2.namedWindow(window)
+cv2.createTrackbar('H',window,0,360,nothing)
+cv2.createTrackbar('S',window,0,255,nothing)
+cv2.createTrackbar('V',window,0,255,nothing)
+cv2.createTrackbar('H*',window,0,360,nothing)
+cv2.createTrackbar('S*',window,0,255,nothing)
+cv2.createTrackbar('V*',window,0,255,nothing)
+def update():
+	#update GUI values
+	lowH = cv2.getTrackbarPos('H',window)
+	lowS = cv2.getTrackbarPos('S',window)
+	lowV = cv2.getTrackbarPos('V',window)
+	hiH = cv2.getTrackbarPos('H*',window)
+	hiS = cv2.getTrackbarPos('S*',window)
+	hiV = cv2.getTrackbarPos('V*',window)
+	low = np.array([lowH,lowS,lowV])
+	high = np.array([hiH,hiS,hiV])
+	return (low,high)
+	
+#capture configurations
+cap = cv2.VideoCapture(1)
 FRAME_WIDTH = cap.get(3)
 FRAME_HEIGHT = cap.get(4)
+vals = tk.Tk()
+
 while 4320:
     #reading camera
     _,frame = cap.read()
-    
     #hsv convert
     hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
     #bluring
@@ -22,14 +55,15 @@ while 4320:
     mask = cv2.dilate(mask,mask_kernel,iterations = 5)
 
     #create mask
-    mask = cv2.inRange(mask,np.array([55,0,250]),np.array([60,5,255]))
+    low,high = update()
+    mask = cv2.inRange(mask,low,high)
     #create res
     res = cv2.bitwise_and(frame,frame,mask=mask)
 
     
     
     #find contours
-    _,contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     
 
     for c in contours:
@@ -80,19 +114,20 @@ while 4320:
     #calc error
     error = target_x - frame_cx
     angle = error * (float(conf.FOV_ANGLE) / FRAME_WIDTH)
-    cv2.putText(res,str(angle),(20,100),1,5,(255,255,255))
+    cv2.putText(img,str(angle),(40,140),4,3,(255,255,255))
     #draw bounding rects and distance calc
     if len(goals) > 1 :
         x1,y1,w1,h1= cv2.boundingRect(goals[0])
         x2,y2,w2,h2= cv2.boundingRect(goals[1])
-        cv2.putText(res,str((((2.0*714)/((w1+w2)/2.0))*conf.INCH2CM)),(x1,y1-20),1,5,(255,255,255))
+        cv2.putText(img,str((((2.0*714)/((w1+w2)/2.0))*conf.INCH2CM)),(40,40),4,3,(255,255,255))
     #display
         
     cv2.imshow("source",frame)
-    cv2.imshow("mask",mask)
+    #cv2.imshow("mask",mask)
     cv2.imshow("cont",res)
-    
-
+    cv2.imshow(window,img)
+    tk.Label(vals,text="angle: %s" % str(angle),fg = "black").pack
+    tk.mainloop()
     if cv2.waitKey(5) & 0xFF == 27:
         break
 cap.release()
