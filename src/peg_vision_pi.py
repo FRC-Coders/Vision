@@ -4,7 +4,7 @@ import numpy as np
 import JokerConfig as conf
 #----------------------------------------------------------------------------------	
 #capture configurations
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 FRAME_WIDTH = cap.get(3)
 FRAME_HEIGHT = cap.get(4)
 print "camera configured"
