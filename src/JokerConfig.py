@@ -1,9 +1,8 @@
 import numpy as np
 #colors
 DRAW_COLOR = (45,255,30)
-#hsv range
-MIN_GREEN = np.array([0,0,230])
-MAX_GREEN = np.array([100,50,255])
+#hsv range 
+GREEN_RANGE = (np.array([0,0,230]),np.array([100,50,255]))
 
 #kernels
 BLUR_KERNEL = (3,3)
