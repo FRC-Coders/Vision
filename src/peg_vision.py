@@ -1,7 +1,6 @@
 import sys
 import cv2
 import numpy as np
-import Tkinter as tk
 #import TheJokerLib_Vision as jk
 import JokerConfig as conf
 #GUI configurations
